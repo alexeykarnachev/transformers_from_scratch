@@ -8,10 +8,10 @@ from transformers_from_scratch.models.bert import BertLayer
 
 @pytest.mark.parametrize(
     'dim,n_heads,intermediate_dim', [
-        (128, 4, 256)
+        (128, 4, 256), (4, 4, 4), (128, 1, 128)
     ]
 )
-def test_bert_block(dim,n_heads,intermediate_dim):
+def test_bert_block(dim, n_heads, intermediate_dim):
     hf_config = transformers.BertConfig(
         hidden_size=dim,
         num_attention_heads=n_heads,
@@ -22,12 +22,12 @@ def test_bert_block(dim,n_heads,intermediate_dim):
     )
 
     seed_everything(228)
-    inp = torch.rand(8, 12, 128)
+    inp = torch.rand(8, 12, dim)
     hf_bert_layer = transformers.BertLayer(hf_config)
     hf_out = hf_bert_layer(inp)[0]
 
     seed_everything(228)
-    inp = torch.rand(8, 12, 128)
+    inp = torch.rand(8, 12, dim)
     bert_layer = BertLayer(
         dim=dim,
         n_heads=n_heads,
