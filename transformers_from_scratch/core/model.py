@@ -13,7 +13,7 @@ class Model(nn.Module):
     def __init__(self, encoder: Encoder, heads: Mapping[str, Head]):
         super().__init__()
         self._encoder = encoder
-        self._heads = heads
+        self._heads = nn.ModuleDict(heads)
 
     def forward(
             self,

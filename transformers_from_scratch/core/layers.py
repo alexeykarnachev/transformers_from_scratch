@@ -53,19 +53,20 @@ class FeedForward(nn.Module):
     def __init__(
             self,
             hidden_dim: int,
-            intermediate_dim: int, act_fn: Callable
+            intermediate_dim: int,
+            act_fn: Callable
     ):
         super().__init__()
 
         self._act_fn = act_fn
 
-        self._ff_inp = nn.Linear(hidden_dim, intermediate_dim)
-        self._ff_out = nn.Linear(intermediate_dim, hidden_dim)
+        self._inp = nn.Linear(hidden_dim, intermediate_dim)
+        self._out = nn.Linear(intermediate_dim, hidden_dim)
 
     def forward(self, inp: torch.Tensor) -> torch.Tensor:
-        out = self._ff_inp(inp)
+        out = self._inp(inp)
         out = self._act_fn(out)
-        out = self._ff_out(out)
+        out = self._out(out)
 
         return out
 

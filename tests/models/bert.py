@@ -12,12 +12,12 @@ def test_model():
     hf_config = BertConfig(
         vocab_size=1000,
         hidden_size=100,
-        num_attention_heads=10,
+        num_attention_heads=2,
         intermediate_size=256,
         hidden_dropout_prob=0.0,
         attention_probs_dropout_prob=0.0,
         max_position_embeddings=100,
-        num_hidden_layers=4,
+        num_hidden_layers=1,
     )
 
     config = BertEncoderConfig(

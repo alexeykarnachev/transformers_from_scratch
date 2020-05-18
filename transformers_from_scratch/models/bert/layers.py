@@ -9,7 +9,6 @@ from transformers_from_scratch.core.layers import (
     AddAndNorm,
     FeedForward
 )
-from transformers_from_scratch.models.bert.functions import init_weights
 
 
 class BertLayer(nn.Module):
@@ -45,8 +44,6 @@ class BertLayer(nn.Module):
         self._add_norm_ff = AddAndNorm(
             hidden_dim=hidden_dim, layer_norm_eps=layer_norm_eps
         )
-
-        self.apply(init_weights)
 
     def forward(self, inp: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         q_mh = self._q_mh_proj(inp)
@@ -89,8 +86,6 @@ class BertEmbeddings(nn.Module):
         )
 
         self._layer_norm = nn.LayerNorm(hidden_dim, eps=layer_norm_eps)
-
-        self.apply(init_weights)
 
     def forward(
             self,
