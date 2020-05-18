@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 import torch
 from torch import nn
@@ -9,44 +9,57 @@ from transformers_from_scratch.core.layers import (
     AddAndNorm,
     FeedForward
 )
+from transformers_from_scratch.models.bert.functions import init_weights
 
 
 class BertLayer(nn.Module):
     def __init__(
             self,
-            dim: int,
+            hidden_dim: int,
             n_heads: int,
             layer_norm_eps: float,
             intermediate_dim: int
     ):
         super().__init__()
 
-        self._q_mh_proj = MultiHeadProjector(dim=dim, n_heads=n_heads)
-        self._k_mh_proj = MultiHeadProjector(dim=dim, n_heads=n_heads)
-        self._v_mh_proj = MultiHeadProjector(dim=dim, n_heads=n_heads)
+        self._q_mh_proj = MultiHeadProjector(
+            hidden_dim=hidden_dim, n_heads=n_heads
+        )
+        self._k_mh_proj = MultiHeadProjector(
+            hidden_dim=hidden_dim, n_heads=n_heads
+        )
+        self._v_mh_proj = MultiHeadProjector(
+            hidden_dim=hidden_dim, n_heads=n_heads
+        )
 
-        self._qk_attn = FullAttention(dim=dim)
-        self._add_norm_attn = AddAndNorm(dim=dim, layer_norm_eps=layer_norm_eps)
+        self._qk_attn = FullAttention(hidden_dim=hidden_dim)
+        self._add_norm_attn = AddAndNorm(
+            hidden_dim=hidden_dim, layer_norm_eps=layer_norm_eps
+        )
 
         self._ff = FeedForward(
-            dim=dim,
+            hidden_dim=hidden_dim,
             intermediate_dim=intermediate_dim,
             act_fn=nn.functional.gelu
         )
-        self._add_norm_ff = AddAndNorm(dim=dim, layer_norm_eps=layer_norm_eps)
+        self._add_norm_ff = AddAndNorm(
+            hidden_dim=hidden_dim, layer_norm_eps=layer_norm_eps
+        )
 
-    def forward(self, inp: torch.Tensor) -> torch.Tensor:
+        self.apply(init_weights)
+
+    def forward(self, inp: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         q_mh = self._q_mh_proj(inp)
         k_mh = self._k_mh_proj(inp)
         v_mh = self._v_mh_proj(inp)
 
-        out = self._qk_attn(queries=q_mh, keys=k_mh, values=v_mh)
-        out = self._add_norm_attn(inp=inp, out=out)
+        attentions = self._qk_attn(queries=q_mh, keys=k_mh, values=v_mh)
+        hidden_states = self._add_norm_attn(inp=inp, out=attentions)
 
-        intermediate = self._ff(out)
-        out = self._add_norm_ff(inp=out, out=intermediate)
+        intermediate = self._ff(hidden_states)
+        hidden_states = self._add_norm_ff(inp=hidden_states, out=intermediate)
 
-        return out
+        return hidden_states, attentions
 
 
 class BertEmbeddings(nn.Module):
@@ -55,7 +68,7 @@ class BertEmbeddings(nn.Module):
             n_pos: int,
             n_types: int,
             vocab_size: int,
-            dim: int,
+            hidden_dim: int,
             pad_token_id: int,
             layer_norm_eps: float
     ):
@@ -63,19 +76,21 @@ class BertEmbeddings(nn.Module):
 
         self._token_emb = nn.Embedding(
             num_embeddings=vocab_size,
-            embedding_dim=dim,
+            embedding_dim=hidden_dim,
             padding_idx=pad_token_id
         )
         self._pos_emb = nn.Embedding(
             num_embeddings=n_pos,
-            embedding_dim=dim
+            embedding_dim=hidden_dim
         )
         self._type_emb = nn.Embedding(
             num_embeddings=n_types,
-            embedding_dim=dim
+            embedding_dim=hidden_dim
         )
 
-        self._layer_norm = nn.LayerNorm(dim, eps=layer_norm_eps)
+        self._layer_norm = nn.LayerNorm(hidden_dim, eps=layer_norm_eps)
+
+        self.apply(init_weights)
 
     def forward(
             self,

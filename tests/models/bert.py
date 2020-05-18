@@ -1,86 +1,71 @@
-import pytest
 import torch
-from transformers import BertConfig as HFBertConfig
-from transformers.modeling_bert import BertEmbeddings as HFBertEmbeddings
-from transformers.modeling_bert import BertLayer as HFBertLayer
+from transformers import BertForPreTraining, BertConfig
 
 from transformers_from_scratch.core.utils import seed_everything
-from transformers_from_scratch.models.bert import (
-    BertLayer,
-    BertEmbeddings
-)
+from transformers_from_scratch.models.bert.encoder import BertEncoder
+from transformers_from_scratch.models.bert.model import BertPreTrainingModel
+from transformers_from_scratch.models.bert.structures import \
+    BertEncoderConfig, BertEncoderInput
 
 
-@pytest.mark.parametrize(
-    'dim,n_heads,intermediate_dim', [
-        (128, 4, 256), (4, 4, 4), (128, 1, 128)
-    ]
-)
-def test_bert_block(dim, n_heads, intermediate_dim):
-    bs = 8
-    seq_len = 12
-
-    hf_config = HFBertConfig(
-        hidden_size=dim,
-        num_attention_heads=n_heads,
-        intermediate_size=intermediate_dim,
+def test_model():
+    hf_config = BertConfig(
+        vocab_size=1000,
+        hidden_size=100,
+        num_attention_heads=10,
+        intermediate_size=256,
         hidden_dropout_prob=0.0,
         attention_probs_dropout_prob=0.0,
-        layer_norm_eps=1e-12
+        max_position_embeddings=100,
+        num_hidden_layers=4,
     )
 
-    seed_everything(228)
-    inp = torch.rand(bs, seq_len, dim)
-    hf_bert_layer = HFBertLayer(hf_config)
-    hf_out = hf_bert_layer(inp)[0]
-
-    seed_everything(228)
-    inp = torch.rand(bs, seq_len, dim)
-    bert_layer = BertLayer(
-        dim=dim,
-        n_heads=n_heads,
-        layer_norm_eps=1e-12,
-        intermediate_dim=intermediate_dim
+    config = BertEncoderConfig(
+        hidden_dim=hf_config.hidden_size,
+        n_heads=hf_config.num_attention_heads,
+        layer_norm_eps=hf_config.layer_norm_eps,
+        intermediate_dim=hf_config.intermediate_size,
+        n_layers=hf_config.num_hidden_layers,
+        n_pos=hf_config.max_position_embeddings,
+        n_types=hf_config.type_vocab_size,
+        vocab_size=hf_config.vocab_size,
+        pad_token_id=hf_config.pad_token_id
     )
-    out = bert_layer(inp)
 
-    assert torch.allclose(hf_out, out, rtol=1e-3)
-
-
-@pytest.mark.parametrize(
-    'dim,vocab_size', [
-        (10, 100), (100, 100), (5, 5), (1, 1), (3, 3)
-    ]
-)
-def test_bert_embeddings(dim, vocab_size):
     bs = 8
     seq_len = 12
 
-    hf_config = HFBertConfig(
-        hidden_size=dim,
-        hidden_dropout_prob=0.0,
-        pad_token_id=0,
-        vocab_size=vocab_size,
-        max_position_embeddings=seq_len,
-        type_vocab_size=2,
-        layer_norm_eps=1e-12
+    seed_everything(228)
+    hf_model = BertForPreTraining(hf_config)
+    token_ids = torch.randint(
+        low=0, high=hf_config.vocab_size, size=(bs, seq_len)
     )
+    clf_labels = torch.randint(
+        low=0, high=2, size=(bs,)
+    )
+    hf_loss = hf_model(
+        token_ids,
+        masked_lm_labels=token_ids,
+        next_sentence_label=clf_labels
+    )[0]
 
     seed_everything(228)
-    inp = torch.randint(low=0, high=vocab_size, size=(bs, seq_len))
-    hf_bert_embeddings = HFBertEmbeddings(hf_config)
-    hf_out = hf_bert_embeddings(inp)
+    encoder = BertEncoder(config)
 
-    seed_everything(228)
-    inp = torch.randint(low=0, high=vocab_size, size=(bs, seq_len))
-    bert_embeddings = BertEmbeddings(
-        dim=dim,
-        n_pos=seq_len,
-        vocab_size=vocab_size,
-        n_types=2,
-        pad_token_id=0,
-        layer_norm_eps=1e-12
+    model = BertPreTrainingModel(encoder=encoder)
+    token_ids = torch.randint(
+        low=0, high=hf_config.vocab_size, size=(bs, seq_len)
     )
-    out = bert_embeddings(inp)
+    clf_labels = torch.randint(
+        low=0, high=2, size=(bs,)
+    )
 
-    assert torch.allclose(hf_out, out, rtol=1e-3)
+    inp = BertEncoderInput(
+        token_ids=token_ids,
+        token_type_ids=None,
+        token_pos=None
+    )
+
+    loss = model(inp, head_labels={'lm': token_ids, 'clf': clf_labels}).loss
+
+    assert torch.allclose(hf_loss, loss)

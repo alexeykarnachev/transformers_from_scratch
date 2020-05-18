@@ -9,13 +9,13 @@ from transformers_from_scratch.core.functions import apply_attention_distr
 
 
 class AddAndNorm(nn.Module):
-    def __init__(self, dim: int, layer_norm_eps: float):
+    def __init__(self, hidden_dim: int, layer_norm_eps: float):
         super().__init__()
 
-        self._layer_norm = nn.LayerNorm(dim, eps=layer_norm_eps)
+        self._layer_norm = nn.LayerNorm(hidden_dim, eps=layer_norm_eps)
 
     def forward(self, inp: torch.Tensor, out: torch.Tensor) -> torch.Tensor:
-        # inp, out: (bs, seq_len, dim)
+        # inp, out: (bs, seq_len, hidden_dim)
         added = inp + out
         normed = self._layer_norm(added)
 
@@ -23,17 +23,17 @@ class AddAndNorm(nn.Module):
 
 
 class MultiHeadProjector(nn.Module):
-    def __init__(self, dim: int, n_heads: int):
+    def __init__(self, hidden_dim: int, n_heads: int):
         super().__init__()
-        self._dim = dim
+        self._hidden_dim = hidden_dim
         self._n_heads = n_heads
         self._head_dim = self._get_head_dim()
 
-        self._projector = nn.Linear(dim, dim)
+        self._projector = nn.Linear(hidden_dim, hidden_dim)
 
     def _get_head_dim(self):
-        head_dim = self._dim // self._n_heads
-        if head_dim * self._n_heads != self._dim:
+        head_dim = self._hidden_dim // self._n_heads
+        if head_dim * self._n_heads != self._hidden_dim:
             raise ValueError("`dim` must be divisible by `n_heads`.")
 
         return head_dim
@@ -50,13 +50,17 @@ class MultiHeadProjector(nn.Module):
 
 
 class FeedForward(nn.Module):
-    def __init__(self, dim: int, intermediate_dim: int, act_fn: Callable):
+    def __init__(
+            self,
+            hidden_dim: int,
+            intermediate_dim: int, act_fn: Callable
+    ):
         super().__init__()
 
         self._act_fn = act_fn
 
-        self._ff_inp = nn.Linear(dim, intermediate_dim)
-        self._ff_out = nn.Linear(intermediate_dim, dim)
+        self._ff_inp = nn.Linear(hidden_dim, intermediate_dim)
+        self._ff_out = nn.Linear(intermediate_dim, hidden_dim)
 
     def forward(self, inp: torch.Tensor) -> torch.Tensor:
         out = self._ff_inp(inp)
@@ -67,10 +71,10 @@ class FeedForward(nn.Module):
 
 
 class Attention(nn.Module, abc.ABC):
-    def __init__(self, dim: int):
+    def __init__(self, hidden_dim: int):
         super().__init__()
 
-        self._out_proj = nn.Linear(dim, dim)
+        self._out_proj = nn.Linear(hidden_dim, hidden_dim)
 
     def forward(
             self,
@@ -87,10 +91,10 @@ class Attention(nn.Module, abc.ABC):
         # Multi-Head attention distributions (bs, n_heads, seq_len, seq_len):
         att_distr = self._get_attention_distribution(scores=scores)
 
-        # Attend (bs, seq_len, dim):
+        # Attend (bs, seq_len, hidden_dim):
         out = apply_attention_distr(values=values, distr=att_distr)
 
-        # Output projection (bs, seq_len, dim):
+        # Output projection (bs, seq_len, hidden_dim):
         out = self._out_proj(out)
 
         return out
@@ -101,8 +105,8 @@ class Attention(nn.Module, abc.ABC):
 
 
 class FullAttention(Attention):
-    def __init__(self, dim: int):
-        super().__init__(dim=dim)
+    def __init__(self, hidden_dim: int):
+        super().__init__(hidden_dim=hidden_dim)
 
     def _get_attention_distribution(self, scores: torch.Tensor) -> torch.Tensor:
         # scores, distr: (bs, n_heads, seq_len, seq_len)
