@@ -4,23 +4,23 @@ from typing import Mapping
 import torch
 from torch import nn
 
-from transformers_from_scratch.core.encoder import Encoder
+from transformers_from_scratch.core.backbone import Backbone
 from transformers_from_scratch.core.heads import Head
-from transformers_from_scratch.core.structures import EncoderInput, ModelOutput
+from transformers_from_scratch.core.structures import BackboneInput, ModelOutput
 
 
 class Model(nn.Module):
-    def __init__(self, encoder: Encoder, heads: Mapping[str, Head]):
+    def __init__(self, backbone: Backbone, heads: Mapping[str, Head]):
         super().__init__()
-        self._encoder = encoder
+        self._backbone = backbone
         self._heads = nn.ModuleDict(heads)
 
     def forward(
             self,
-            encoder_input: EncoderInput,
+            backbone_input: BackboneInput,
             head_labels: Mapping[str, torch.Tensor]
     ) -> ModelOutput:
-        encoded = self._encoder(encoder_input=encoder_input)
+        encoded = self._backbone(backbone_input=backbone_input)
 
         head_losses = dict()
 

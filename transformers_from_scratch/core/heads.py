@@ -3,7 +3,7 @@ import abc
 import torch
 from torch import nn
 
-from transformers_from_scratch.core.structures import EncoderOutput
+from transformers_from_scratch.core.structures import BackboneOutput
 
 
 class Head(nn.Module, abc.ABC):
@@ -12,17 +12,17 @@ class Head(nn.Module, abc.ABC):
 
     def forward(
             self,
-            encoder_output: EncoderOutput,
+            backbone_output: BackboneOutput,
             labels: torch.Tensor
     ) -> torch.Tensor:
-        head_input = self._get_head_input(encoder_output=encoder_output)
+        head_input = self._get_head_input(backbone_output=backbone_output)
         logits = self._calc_logits(head_input=head_input)
         loss = self._calc_loss(logits=logits, labels=labels)
 
         return loss
 
     @abc.abstractmethod
-    def _get_head_input(self, encoder_output: EncoderOutput) -> torch.Tensor:
+    def _get_head_input(self, backbone_output: BackboneOutput) -> torch.Tensor:
         pass
 
     @abc.abstractmethod
@@ -44,8 +44,8 @@ class TokenClassificationHead(Head):
         self._n_classes = n_classes
         self._linear = nn.Linear(hidden_dim, self._n_classes)
 
-    def _get_head_input(self, encoder_output: EncoderOutput) -> torch.Tensor:
-        return encoder_output.hidden_states[-1]
+    def _get_head_input(self, backbone_output: BackboneOutput) -> torch.Tensor:
+        return backbone_output.hidden_states[-1]
 
     def _calc_logits(self, head_input: torch.Tensor) -> torch.Tensor:
         return self._linear(head_input)

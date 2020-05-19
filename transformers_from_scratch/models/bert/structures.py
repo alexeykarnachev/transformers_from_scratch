@@ -4,13 +4,13 @@ from typing import Sequence, Optional
 import torch
 
 from transformers_from_scratch.core.structures import (
-    EncoderInput,
-    EncoderOutput
+    BackboneInput,
+    BackboneOutput
 )
 
 
 @dataclass
-class BertEncoderConfig:
+class BertBackboneConfig:
     hidden_dim: int
     n_heads: int
     layer_norm_eps: float
@@ -24,11 +24,11 @@ class BertEncoderConfig:
 
 
 @dataclass
-class BertEncoderOutput(EncoderOutput):
+class BertBackboneOutput(BackboneOutput):
     attentions: Sequence[torch.Tensor]
 
 
 @dataclass
-class BertEncoderInput(EncoderInput):
+class BertBackboneInput(BackboneInput):
     token_type_ids: Optional[torch.Tensor]
     token_pos: Optional[torch.Tensor]

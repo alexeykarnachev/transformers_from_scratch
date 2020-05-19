@@ -1,24 +1,24 @@
 from torch import nn
 
-from transformers_from_scratch.core.encoder import Encoder
+from transformers_from_scratch.core.backbone import Backbone
 from transformers_from_scratch.models.bert.layers import (
     BertEmbeddings,
     BertLayer
 )
 from transformers_from_scratch.models.bert.structures import (
-    BertEncoderInput,
-    BertEncoderOutput,
-    BertEncoderConfig
+    BertBackboneInput,
+    BertBackboneOutput,
+    BertBackboneConfig
 )
 
 
-class BertEncoder(Encoder):
+class BertBackbone(Backbone):
 
     @property
     def token_embedding_weights(self):
         return self._embeddings.token_embedding_weights
 
-    def __init__(self, config: BertEncoderConfig):
+    def __init__(self, config: BertBackboneConfig):
         super().__init__()
 
         self.config = config
@@ -43,11 +43,11 @@ class BertEncoder(Encoder):
 
             self._layers.append(layer)
 
-    def forward(self, encoder_input: BertEncoderInput) -> BertEncoderOutput:
+    def forward(self, backbone_input: BertBackboneInput) -> BertBackboneOutput:
         hidden_states = self._embeddings(
-            token_ids=encoder_input.token_ids,
-            token_type_ids=encoder_input.token_type_ids,
-            token_pos=encoder_input.token_pos
+            token_ids=backbone_input.token_ids,
+            token_type_ids=backbone_input.token_type_ids,
+            token_pos=backbone_input.token_pos
         )
 
         all_hidden_states = []
@@ -58,7 +58,7 @@ class BertEncoder(Encoder):
             all_hidden_states.append(hidden_states)
             all_attentions.append(attentions)
 
-        out = BertEncoderOutput(
+        out = BertBackboneOutput(
             hidden_states=all_hidden_states,
             attentions=all_attentions
         )

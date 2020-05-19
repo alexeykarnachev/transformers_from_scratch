@@ -5,7 +5,7 @@ from torch import nn
 from torch.nn import LayerNorm
 
 from transformers_from_scratch.core.heads import Head, TokenClassificationHead
-from transformers_from_scratch.core.structures import EncoderOutput
+from transformers_from_scratch.core.structures import BackboneOutput
 
 
 class BertNextSentencePredictionHead(Head):
@@ -16,8 +16,8 @@ class BertNextSentencePredictionHead(Head):
         self._act = nn.functional.tanh
         self._clf = nn.Linear(hidden_dim, 2)
 
-    def _get_head_input(self, encoder_output: EncoderOutput) -> torch.Tensor:
-        return encoder_output.hidden_states[-1][:, 0, :]
+    def _get_head_input(self, backbone_output: BackboneOutput) -> torch.Tensor:
+        return backbone_output.hidden_states[-1][:, 0, :]
 
     def _calc_logits(self, head_input: torch.Tensor) -> torch.Tensor:
         pooled = self._pooler(head_input)

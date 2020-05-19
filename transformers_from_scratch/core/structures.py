@@ -5,12 +5,12 @@ import torch
 
 
 @dataclass
-class EncoderOutput:
+class BackboneOutput:
     hidden_states: Sequence[torch.Tensor]
 
 
 @dataclass
-class EncoderInput:
+class BackboneInput:
     token_ids: torch.Tensor
 
 
