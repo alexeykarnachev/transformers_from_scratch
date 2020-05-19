@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 import torch
 from torch import nn
 
-from transformers_from_scratch.core.layers import (
+from transformers_from_scratch.core.modelling.layers import (
     MultiHeadProjector,
     FullAttention,
     AddAndNorm,

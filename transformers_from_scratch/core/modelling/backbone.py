@@ -2,7 +2,7 @@ import abc
 
 from torch import nn
 
-from transformers_from_scratch.core.structures import (
+from transformers_from_scratch.core.modelling.structures import (
     BackboneOutput,
     BackboneInput
 )

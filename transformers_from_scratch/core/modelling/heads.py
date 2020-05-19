@@ -3,7 +3,7 @@ import abc
 import torch
 from torch import nn
 
-from transformers_from_scratch.core.structures import BackboneOutput
+from transformers_from_scratch.core.modelling.structures import BackboneOutput
 
 
 class Head(nn.Module, abc.ABC):

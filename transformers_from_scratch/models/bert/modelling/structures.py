@@ -3,7 +3,7 @@ from typing import Sequence, Optional
 
 import torch
 
-from transformers_from_scratch.core.structures import (
+from transformers_from_scratch.core.modelling.structures import (
     BackboneInput,
     BackboneOutput
 )

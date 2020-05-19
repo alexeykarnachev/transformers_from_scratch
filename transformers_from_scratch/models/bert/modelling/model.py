@@ -1,7 +1,7 @@
-from transformers_from_scratch.core.model import Model
-from transformers_from_scratch.models.bert.backbone import BertBackbone
-from transformers_from_scratch.models.bert.functions import init_weights
-from transformers_from_scratch.models.bert.heads import \
+from transformers_from_scratch.core.modelling.model import Model
+from transformers_from_scratch.models.bert.modelling.backbone import BertBackbone
+from transformers_from_scratch.models.bert.modelling.functions import init_weights
+from transformers_from_scratch.models.bert.modelling.heads import \
     BertNextSentencePredictionHead, BertLMPredictionHead
 
 

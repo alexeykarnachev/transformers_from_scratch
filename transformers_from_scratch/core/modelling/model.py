@@ -4,9 +4,9 @@ from typing import Mapping
 import torch
 from torch import nn
 
-from transformers_from_scratch.core.backbone import Backbone
-from transformers_from_scratch.core.heads import Head
-from transformers_from_scratch.core.structures import BackboneInput, ModelOutput
+from transformers_from_scratch.core.modelling.backbone import Backbone
+from transformers_from_scratch.core.modelling.heads import Head
+from transformers_from_scratch.core.modelling.structures import BackboneInput, ModelOutput
 
 
 class Model(nn.Module):

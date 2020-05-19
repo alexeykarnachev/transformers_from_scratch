@@ -1,11 +1,11 @@
 from torch import nn
 
-from transformers_from_scratch.core.backbone import Backbone
-from transformers_from_scratch.models.bert.layers import (
+from transformers_from_scratch.core.modelling.backbone import Backbone
+from transformers_from_scratch.models.bert.modelling.layers import (
     BertEmbeddings,
     BertLayer
 )
-from transformers_from_scratch.models.bert.structures import (
+from transformers_from_scratch.models.bert.modelling.structures import (
     BertBackboneInput,
     BertBackboneOutput,
     BertBackboneConfig

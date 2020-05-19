@@ -4,8 +4,8 @@ import torch
 from torch import nn
 from torch.nn import LayerNorm
 
-from transformers_from_scratch.core.heads import Head, TokenClassificationHead
-from transformers_from_scratch.core.structures import BackboneOutput
+from transformers_from_scratch.core.modelling.heads import Head, TokenClassificationHead
+from transformers_from_scratch.core.modelling.structures import BackboneOutput
 
 
 class BertNextSentencePredictionHead(Head):

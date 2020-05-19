@@ -2,9 +2,9 @@ import torch
 from transformers import BertForPreTraining, BertConfig
 
 from transformers_from_scratch.core.utils import seed_everything
-from transformers_from_scratch.models.bert.backbone import BertBackbone
-from transformers_from_scratch.models.bert.model import BertPreTrainingModel
-from transformers_from_scratch.models.bert.structures import \
+from transformers_from_scratch.models.bert.modelling.backbone import BertBackbone
+from transformers_from_scratch.models.bert.modelling.model import BertPreTrainingModel
+from transformers_from_scratch.models.bert.modelling.structures import \
     BertBackboneConfig, BertBackboneInput
 
 

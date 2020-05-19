@@ -5,7 +5,7 @@ from typing import Callable
 import torch
 from torch import nn
 
-from transformers_from_scratch.core.functions import apply_attention_distr
+from transformers_from_scratch.core.modelling.functions import apply_attention_distr
 
 
 class AddAndNorm(nn.Module):
