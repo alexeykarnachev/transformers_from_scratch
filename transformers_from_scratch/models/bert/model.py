@@ -14,18 +14,11 @@ class BertPreTrainingModel(Model):
             'lm': BertLMPredictionHead(
                 hidden_dim=encoder.config.hidden_dim,
                 vocab_size=encoder.config.vocab_size,
-                layer_norm_eps=encoder.config.layer_norm_eps
+                layer_norm_eps=encoder.config.layer_norm_eps,
+                token_emb_weights=encoder.token_embedding_weights
             )
         }
 
         super().__init__(encoder, heads)
 
         self.apply(init_weights)
-        self._tie_weights()
-
-    def _tie_weights(self):
-        # TODO: generalize this
-        o = self._heads['lm']._decoder
-        i = self._encoder._embeddings._token_emb
-
-        o.weight = i.weight

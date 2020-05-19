@@ -1,3 +1,5 @@
+from typing import Optional
+
 import torch
 from torch import nn
 from torch.nn import LayerNorm
@@ -33,12 +35,21 @@ class BertNextSentencePredictionHead(Head):
 
 
 class BertLMPredictionHead(TokenClassificationHead):
-    def __init__(self, hidden_dim: int, layer_norm_eps: float, vocab_size: int):
+    def __init__(
+            self,
+            hidden_dim: int,
+            layer_norm_eps: float,
+            vocab_size: int,
+            token_emb_weights: Optional[torch.nn.Parameter] = None
+    ):
         super().__init__(hidden_dim=hidden_dim, n_classes=vocab_size)
 
         self._linear = nn.Linear(hidden_dim, hidden_dim)
         self._layer_norm = LayerNorm(hidden_dim, eps=layer_norm_eps)
         self._decoder = nn.Linear(hidden_dim, vocab_size)
+
+        if token_emb_weights is not None:
+            self._decoder.weight = token_emb_weights
 
     def _calc_logits(self, head_input: torch.Tensor) -> torch.Tensor:
         logits = self._linear(head_input)

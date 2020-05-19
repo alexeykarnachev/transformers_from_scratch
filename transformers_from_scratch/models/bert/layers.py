@@ -60,6 +60,11 @@ class BertLayer(nn.Module):
 
 
 class BertEmbeddings(nn.Module):
+
+    @property
+    def token_embedding_weights(self) -> torch.nn.Parameter:
+        return self._token_emb.weight
+
     def __init__(
             self,
             n_pos: int,

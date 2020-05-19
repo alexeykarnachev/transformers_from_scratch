@@ -13,6 +13,11 @@ from transformers_from_scratch.models.bert.structures import (
 
 
 class BertEncoder(Encoder):
+
+    @property
+    def token_embedding_weights(self):
+        return self._embeddings.token_embedding_weights
+
     def __init__(self, config: BertEncoderConfig):
         super().__init__()
 
