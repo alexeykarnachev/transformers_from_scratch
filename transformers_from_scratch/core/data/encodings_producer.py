@@ -1,5 +1,7 @@
 from multiprocessing import Process, Queue
 
+from transformers_from_scratch.core.data.tokenizer import Tokenizer
+
 
 class EncodingsProducer(Process):
     def __init__(

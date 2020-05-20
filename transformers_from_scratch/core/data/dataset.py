@@ -5,16 +5,17 @@ from typing import Optional, Callable
 
 import torch.utils.data
 
+from transformers_from_scratch.core.data.encodings_collate import EncodingsCollate
 from transformers_from_scratch.core.data.encodings_producer import EncodingsProducer
 from transformers_from_scratch.core.data.encodings_sampler import EncodingsSampler
 from transformers_from_scratch.core.data.text_inputs_producer import TextInputsProducer
 from transformers_from_scratch.core.data.text_lines_parsers import TextLinesParser
-from transformers_from_scratch.core.queue_iterable_dataset import QueueIterableDataset
+from transformers_from_scratch.core.data.tokenizer import Tokenizer
 
 _QUEUE_MAX_SIZE = 10
 
 
-class Dataset(QueueIterableDataset):
+class Dataset:
     def __init__(
             self,
             file_path: pathlib.Path,
@@ -31,11 +32,9 @@ class Dataset(QueueIterableDataset):
         self._text_lines_parser = text_lines_parser
         self._collate = encodings_collate
 
-        sorted_samples_queue = self._initialize()
+        self._inp_queue = self._initialize()
 
-        super().__init__(inp_queue=sorted_samples_queue)
-
-    def _initialize(self):
+    def _initialize(self) -> Queue:
         text_inputs_queue = Queue(maxsize=_QUEUE_MAX_SIZE)
         encodings_queue = Queue(maxsize=_QUEUE_MAX_SIZE)
         sorted_encodings_queue = Queue(maxsize=_QUEUE_MAX_SIZE)
@@ -71,6 +70,11 @@ class Dataset(QueueIterableDataset):
     @abc.abstractmethod
     def __len__(self) -> int:
         pass
+
+    def __iter__(self):
+        while True:
+            sample = self._inp_queue.get()
+            yield sample
 
     def get_data_loader(
             self,
