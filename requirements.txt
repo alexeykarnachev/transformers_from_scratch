@@ -2,3 +2,4 @@ torch==1.4
 numpy==1.18.4
 pytorch-lightning==0.7.6
 tokenizers==0.7.0
+docstring-parser==0.7.1
