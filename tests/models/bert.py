@@ -1,7 +1,7 @@
 import torch
 from transformers import BertForPreTraining, BertConfig
 
-from transformers_from_scratch.core.utils import seed_everything
+from transformers_from_scratch.core.utilities.seeding import seed_everything
 from transformers_from_scratch.models.bert.modelling.backbone import BertBackbone
 from transformers_from_scratch.models.bert.modelling.model import BertPreTrainingModel
 from transformers_from_scratch.models.bert.modelling.structures import \
@@ -29,7 +29,9 @@ def test_model():
         n_pos=hf_config.max_position_embeddings,
         n_types=hf_config.type_vocab_size,
         vocab_size=hf_config.vocab_size,
-        pad_token_id=hf_config.pad_token_id
+        pad_token_id=hf_config.pad_token_id,
+        attention_probs_dropout=hf_config.attention_probs_dropout_prob,
+        hidden_dropout=hf_config.hidden_dropout_prob
     )
 
     bs = 8

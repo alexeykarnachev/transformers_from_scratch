@@ -29,7 +29,8 @@ class BertBackbone(Backbone):
             vocab_size=config.vocab_size,
             hidden_dim=config.hidden_dim,
             pad_token_id=config.pad_token_id,
-            layer_norm_eps=config.layer_norm_eps
+            layer_norm_eps=config.layer_norm_eps,
+            hidden_dropout=config.hidden_dropout
         )
 
         self._layers = nn.ModuleList()
@@ -38,7 +39,9 @@ class BertBackbone(Backbone):
                 hidden_dim=config.hidden_dim,
                 n_heads=config.n_heads,
                 layer_norm_eps=config.layer_norm_eps,
-                intermediate_dim=config.intermediate_dim
+                intermediate_dim=config.intermediate_dim,
+                attention_probs_dropout=config.attention_probs_dropout,
+                hidden_dropout=config.hidden_dropout
             )
 
             self._layers.append(layer)

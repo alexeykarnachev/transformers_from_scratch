@@ -21,6 +21,8 @@ class BertBackboneConfig:
     n_types: int
     vocab_size: int
     pad_token_id: int
+    attention_probs_dropout: float
+    hidden_dropout: float
 
 
 @dataclass

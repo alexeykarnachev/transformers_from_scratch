@@ -271,3 +271,28 @@ def _get_words_from_sequences(sequences: Sequence[Encoding]) -> List[List[int]]:
             words.append(word)
 
     return words
+
+
+if __name__ == '__main__':
+    tokenizer = BertWordPieceTokenizer(
+        '/media/akarnachev/de415b0e-eedb-4ef5-bbae-ccb7a2495f33/rubert_cased_L-12_H-768_A-12_v1/vocab.txt')
+
+    queue = Queue(maxsize=100000)
+
+    producer = SamplesProducer(
+        file_path=pathlib.Path('./train.dialogs'),
+        tokenizer=tokenizer,
+        tokenization_chunk_size=100,
+        max_len=128,
+        masked_lm_prob=0.15,
+        out_samples_queue=queue
+    )
+
+    producer.start()
+
+    while True:
+        #sample = queue.get()
+        print(queue.qsize())
+        # print(tokenizer.decode(sample.token_ids, skip_special_tokens=False))
+
+        #print(sample)

@@ -17,7 +17,9 @@ class BertLayer(nn.Module):
             hidden_dim: int,
             n_heads: int,
             layer_norm_eps: float,
-            intermediate_dim: int
+            intermediate_dim: int,
+            attention_probs_dropout: float,
+            hidden_dropout: float
     ):
         super().__init__()
 
@@ -31,15 +33,21 @@ class BertLayer(nn.Module):
             hidden_dim=hidden_dim, n_heads=n_heads
         )
 
-        self._qk_attn = FullAttention(hidden_dim=hidden_dim)
+        self._attn = FullAttention(
+            hidden_dim=hidden_dim,
+            attention_probs_dropout=attention_probs_dropout,
+            hidden_dropout=hidden_dropout
+        )
         self._add_norm_attn = AddAndNorm(
-            hidden_dim=hidden_dim, layer_norm_eps=layer_norm_eps
+            hidden_dim=hidden_dim,
+            layer_norm_eps=layer_norm_eps
         )
 
         self._ff = FeedForward(
             hidden_dim=hidden_dim,
             intermediate_dim=intermediate_dim,
-            act_fn=nn.functional.gelu
+            act_fn=nn.functional.gelu,
+            dropout=hidden_dropout
         )
         self._add_norm_ff = AddAndNorm(
             hidden_dim=hidden_dim, layer_norm_eps=layer_norm_eps
@@ -50,7 +58,7 @@ class BertLayer(nn.Module):
         k_mh = self._k_mh_proj(inp)
         v_mh = self._v_mh_proj(inp)
 
-        attentions = self._qk_attn(queries=q_mh, keys=k_mh, values=v_mh)
+        attentions = self._attn(queries=q_mh, keys=k_mh, values=v_mh)
         hidden_states = self._add_norm_attn(inp=inp, out=attentions)
 
         intermediate = self._ff(hidden_states)
@@ -72,7 +80,8 @@ class BertEmbeddings(nn.Module):
             vocab_size: int,
             hidden_dim: int,
             pad_token_id: int,
-            layer_norm_eps: float
+            layer_norm_eps: float,
+            hidden_dropout: float
     ):
         super().__init__()
 
@@ -91,6 +100,7 @@ class BertEmbeddings(nn.Module):
         )
 
         self._layer_norm = nn.LayerNorm(hidden_dim, eps=layer_norm_eps)
+        self._dropout = nn.Dropout(hidden_dropout)
 
     def forward(
             self,
@@ -117,5 +127,6 @@ class BertEmbeddings(nn.Module):
 
         emb = token_emb + type_emb + pos_emb
         out = self._layer_norm(emb)
+        out = self._dropout(out)
 
         return out

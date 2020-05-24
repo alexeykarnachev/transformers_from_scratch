@@ -54,7 +54,8 @@ class FeedForward(nn.Module):
             self,
             hidden_dim: int,
             intermediate_dim: int,
-            act_fn: Callable
+            act_fn: Callable,
+            dropout: float
     ):
         super().__init__()
 
@@ -62,20 +63,29 @@ class FeedForward(nn.Module):
 
         self._inp = nn.Linear(hidden_dim, intermediate_dim)
         self._out = nn.Linear(intermediate_dim, hidden_dim)
+        self._dropout = nn.Dropout(dropout)
 
     def forward(self, inp: torch.Tensor) -> torch.Tensor:
         out = self._inp(inp)
         out = self._act_fn(out)
         out = self._out(out)
+        out = self._dropout(out)
 
         return out
 
 
 class Attention(nn.Module, abc.ABC):
-    def __init__(self, hidden_dim: int):
+    def __init__(
+            self,
+            hidden_dim: int,
+            attention_probs_dropout: float,
+            hidden_dropout: float
+    ):
         super().__init__()
 
         self._out_proj = nn.Linear(hidden_dim, hidden_dim)
+        self._probs_dropout = nn.Dropout(attention_probs_dropout)
+        self._hidden_dropout = nn.Dropout(hidden_dropout)
 
     def forward(
             self,
@@ -91,12 +101,14 @@ class Attention(nn.Module, abc.ABC):
 
         # Multi-Head attention distributions (bs, n_heads, seq_len, seq_len):
         att_distr = self._get_attention_distribution(scores=scores)
+        att_distr = self._probs_dropout(att_distr)
 
         # Attend (bs, seq_len, hidden_dim):
         out = apply_attention_distr(values=values, distr=att_distr)
 
         # Output projection (bs, seq_len, hidden_dim):
         out = self._out_proj(out)
+        out = self._hidden_dropout(out)
 
         return out
 
@@ -106,8 +118,17 @@ class Attention(nn.Module, abc.ABC):
 
 
 class FullAttention(Attention):
-    def __init__(self, hidden_dim: int):
-        super().__init__(hidden_dim=hidden_dim)
+    def __init__(
+            self,
+            hidden_dim: int,
+            attention_probs_dropout: float,
+            hidden_dropout: float
+    ):
+        super().__init__(
+            hidden_dim=hidden_dim,
+            attention_probs_dropout=attention_probs_dropout,
+            hidden_dropout=hidden_dropout
+        )
 
     def _get_attention_distribution(self, scores: torch.Tensor) -> torch.Tensor:
         # scores, distr: (bs, n_heads, seq_len, seq_len)
